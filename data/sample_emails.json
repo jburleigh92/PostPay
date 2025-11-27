@@ -1,0 +1,22 @@
+[
+  {
+    "provider": "Zelle",
+    "raw_email_body": "You received $45.00 from John Doe via Zelle on February 3, 2024 1:14 PM. The money is now available in your account."
+  },
+  {
+    "provider": "Venmo",
+    "raw_email_body": "John Smith paid you $27.50. You received a payment on February 4, 2024 9:32 AM. Thanks for using Venmo."
+  },
+  {
+    "provider": "Cash App",
+    "raw_email_body": "You received $18.25 from Jane Roe. Jane Roe sent you money on February 4, 2024 3:58 PM using Cash App."
+  },
+  {
+    "provider": "Apple Cash",
+    "raw_email_body": "You received $55.00 from Mike Thompson. Payment from Mike Thompson on February 2, 2024 10:12 AM via Apple Cash."
+  },
+  {
+    "provider": "Other",
+    "raw_email_body": "You received a payment of $120.00 from Acme Services for invoice #00401. Payment posted on February 5, 2024 8:44 AM."
+  }
+]
