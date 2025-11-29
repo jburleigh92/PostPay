@@ -2,9 +2,9 @@
 PostPay Public API
 ------------------
 
-This module exposes a clean and unified interface for the PostPay automation
-engine. External users should import from here rather than accessing internal
-modules directly.
+This module provides a unified, stable import interface for the PostPay
+automation engine. External code should import from here rather than accessing
+internal modules directly.
 
 Example usage:
 
@@ -19,9 +19,12 @@ Example usage:
         OtherPaymentParser,
         setup_logger,
         is_sleep_window,
+        __version__,
     )
 
 """
+
+from .version import __version__
 
 # Service Layer
 from .services.payment_importer import PaymentImporter
@@ -40,6 +43,8 @@ from .utils.logging_utils import setup_logger
 from .utils.sleep_window import is_sleep_window
 
 __all__ = [
+    "__version__",
+
     # Services
     "PaymentImporter",
     "MessageFormatter",
@@ -52,7 +57,7 @@ __all__ = [
     "VenmoParser",
     "ZelleParser",
 
-    # Utils
+    # Utilities
     "setup_logger",
     "is_sleep_window",
 ]
