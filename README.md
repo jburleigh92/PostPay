@@ -1,3 +1,10 @@
+<p align="center">
+  <img src="https://img.shields.io/github/v/tag/jburleigh92/PostPay?label=version&color=blue" />
+  <img src="https://img.shields.io/github/actions/workflow/status/jburleigh92/PostPay/tests.yml?label=tests" />
+  <img src="https://img.shields.io/github/license/jburleigh92/PostPay" />
+</p>
+
+
 # PostPay (4.1.0)
 
 PostPay is an automated payment-notification ingestion engine that reads payment alerts from Gmail, parses structured payment data (Zelle, Venmo, Cash App, Apple Cash), logs each payment into SQLite for deduplication, and posts formatted notifications to Slack in real time.
