@@ -1,4 +1,4 @@
-<p align="center">
+<p align="left">
   <img src="https://img.shields.io/github/v/tag/jburleigh92/PostPay?label=version&color=blue" />
   <img src="https://img.shields.io/github/actions/workflow/status/jburleigh92/PostPay/tests.yml?label=tests" />
   <img src="https://img.shields.io/github/license/jburleigh92/PostPay" />
