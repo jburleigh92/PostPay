@@ -1,15 +1,16 @@
 import unittest
 from unittest.mock import patch, MagicMock
 
-from slack_client import SlackClient
+from postpay.services.notifications.slack import SlackClient
 
 
 class TestSlackClient(unittest.TestCase):
 
-    @patch("requests.post")
+    @patch("postpay.services.notifications.slack.requests.post")
     def test_post_message_success(self, mock_post):
         # Mock Slack API successful response
         mock_response = MagicMock()
+        mock_response.ok = True
         mock_response.json.return_value = {"ok": True}
         mock_post.return_value = mock_response
 
@@ -32,21 +33,22 @@ class TestSlackClient(unittest.TestCase):
         payload = call_args[1]["json"]
         headers = call_args[1]["headers"]
 
-        # Validate URL matches original script
+        # Validate Slack API URL
         self.assertEqual(url, "https://slack.com/api/chat.postMessage")
 
-        # Validate payload matches original script behavior
+        # Validate payload structure
         self.assertEqual(payload["channel"], "C1234567890")
         self.assertEqual(payload["text"], "Test message")
 
-        # Validate correct Bearer token usage
+        # Validate Authorization header
         self.assertIn("Authorization", headers)
         self.assertEqual(headers["Authorization"], "Bearer xoxb-testtoken")
 
-    @patch("requests.post")
+    @patch("postpay.services.notifications.slack.requests.post")
     def test_post_message_failure(self, mock_post):
         # Mock Slack API error response
         mock_response = MagicMock()
+        mock_response.ok = True
         mock_response.json.return_value = {"ok": False, "error": "invalid_auth"}
         mock_post.return_value = mock_response
 
@@ -58,7 +60,7 @@ class TestSlackClient(unittest.TestCase):
 
         ok = client.post_message("Test")
 
-        # Should return False for non-ok Slack response
+        # Should return False on Slack failure
         self.assertFalse(ok)
 
 
