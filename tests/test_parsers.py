@@ -1,10 +1,10 @@
 import unittest
 
-from parsers.zelle_parser import ZelleParser
-from parsers.venmo_parser import VenmoParser
-from parsers.cashapp_parser import CashAppParser
-from parsers.apple_parser import AppleParser
-from parsers.other_parsers import OtherParser
+from postpay.parsers.zelle_parser import ZelleParser
+from postpay.parsers.venmo_parser import VenmoParser
+from postpay.parsers.cashapp_parser import CashAppParser
+from postpay.parsers.apple_parser import AppleParser
+from postpay.parsers.other_parsers import OtherParser
 
 
 class TestParsers(unittest.TestCase):
