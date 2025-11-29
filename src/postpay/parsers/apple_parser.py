@@ -1,16 +1,17 @@
 import re
 from datetime import datetime
+from postpay.utils.logging_utils import info, error
 
 
-class AppleParser:
+class ApplePayParser:
     """
     Parser for Apple Cash / Apple Pay payment notifications.
 
-    Mirrors the logic used in your original PostPay4.py:
-    - Detects Apple Cash related keywords
-    - Extracts dollar amounts via $XX.xx regex
-    - Extracts sender using flexible 'from/sent you' patterns
-    - Attempts to parse timestamp (optional in many Apple Cash emails)
+    This parser mirrors your original PostPay4 logic:
+    - Detect Apple Cash related keywords
+    - Extract dollar amounts
+    - Extract sender with natural-language patterns
+    - Normalize timestamps when possible
     """
 
     KEYWORDS = [
@@ -24,9 +25,6 @@ class AppleParser:
 
     AMOUNT_REGEX = re.compile(r"\$([\d,]+\.\d{2})")
 
-    # Examples:
-    # "You received $25.00 from John Doe via Apple Cash"
-    # "John Doe sent you $50.00 using Apple Pay"
     SENDER_REGEX = re.compile(
         r"(?:from|sent you|payment from)\s+([A-Za-z .'-]+)",
         re.IGNORECASE,
@@ -37,53 +35,49 @@ class AppleParser:
         re.IGNORECASE,
     )
 
-    def matches(self, email_body: str) -> bool:
-        """
-        Determines if the email body likely refers to an Apple Cash transaction.
-        """
-        body = email_body.lower()
+    def matches(self, text: str) -> bool:
+        """Return True if the email/sms content likely belongs to Apple Cash."""
+        body = text.lower()
         return any(keyword in body for keyword in self.KEYWORDS)
 
-    def parse(self, email_body: str):
-        """
-        Parse the Apple Cash related email. Returns:
-        {
-            "provider": "Apple Cash",
-            "amount": ...,
-            "sender": ...,
-            "timestamp": ...,
-        }
-        or None if not matched.
-        """
-
-        if not self.matches(email_body):
+    def parse(self, text: str):
+        """Parse an Apple Cash message into a normalized payment object."""
+        if not self.matches(text):
             return None
 
-        # Extract amount
-        amount_match = self.AMOUNT_REGEX.search(email_body)
+        # Amount
+        amount_match = self.AMOUNT_REGEX.search(text)
         amount = f"${amount_match.group(1)}" if amount_match else None
 
-        # Extract sender
-        sender_match = self.SENDER_REGEX.search(email_body)
+        # Sender
+        sender_match = self.SENDER_REGEX.search(text)
         sender = sender_match.group(1).strip() if sender_match else "Unknown Sender"
 
-        # Optional timestamp
-        timestamp_text = None
-        ts_match = self.DATE_REGEX.search(email_body)
-        if ts_match:
-            timestamp_text = ts_match.group(1)
-
-        # Normalize timestamp
+        # Timestamp
         timestamp = None
-        if timestamp_text:
+        date_match = self.DATE_REGEX.search(text)
+        if date_match:
+            raw_ts = date_match.group(1)
             try:
-                timestamp = datetime.strptime(timestamp_text, "%B %d, %Y %I:%M %p")
+                timestamp = datetime.strptime(raw_ts, "%B %d, %Y %I:%M %p").timestamp()
             except Exception:
-                timestamp = timestamp_text
+                timestamp = datetime.now().timestamp()
 
         return {
             "provider": "Apple Cash",
             "amount": amount,
             "sender": sender,
-            "timestamp": timestamp,
+            "timestamp": timestamp or datetime.now().timestamp(),
+            "formatted_message": None,  # Filled later by MessageFormatter
+            "transaction_id": f"apple-{sender}-{timestamp}",
         }
+
+    # NEW: required by the importer
+    def fetch(self):
+        """
+        Apple Pay has no API — this parser cannot fetch by itself.
+        Your email ingestion layer calls parser.parse() for each email body.
+
+        So fetch() returns an empty list.
+        """
+        return []
