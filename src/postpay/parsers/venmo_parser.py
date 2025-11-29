@@ -24,6 +24,7 @@ class VenmoParser:
     # "John Doe paid you $15.00"
     # "You received $40.00 from Jane Roe"
     AMOUNT_REGEX = re.compile(r"\$([\d,]+\.\d{2})")
+
     SENDER_REGEX = re.compile(
         r"(?:from|paid you|sent you|money from)\s+([A-Za-z .'-]+)",
         re.IGNORECASE,
@@ -39,8 +40,8 @@ class VenmoParser:
         """
         Determine whether the email body likely corresponds to a Venmo payment.
         """
-        lower = email_body.lower()
-        return any(keyword in lower for keyword in self.KEYWORDS)
+        text = email_body.lower()
+        return any(keyword in text for keyword in self.KEYWORDS)
 
     def parse(self, email_body: str):
         """
@@ -54,26 +55,26 @@ class VenmoParser:
             return None
 
         # Extract amount
-        amount_match = self.AMOUNT_REGEX.search(email_body)
-        amount = f"${amount_match.group(1)}" if amount_match else None
+        amt = self.AMOUNT_REGEX.search(email_body)
+        amount = f"${amt.group(1)}" if amt else None
 
         # Extract sender
-        sender_match = self.SENDER_REGEX.search(email_body)
-        sender = sender_match.group(1).strip() if sender_match else "Unknown Sender"
+        snd = self.SENDER_REGEX.search(email_body)
+        sender = snd.group(1).strip() if snd else "Unknown Sender"
 
-        # Timestamp extraction (fallback only)
-        timestamp_text = None
-        match = self.DATE_REGEX.search(email_body)
-        if match:
-            timestamp_text = match.group(1)
+        # Optional timestamp
+        raw_ts = None
+        ts_match = self.DATE_REGEX.search(email_body)
+        if ts_match:
+            raw_ts = ts_match.group(1)
 
-        # Try to normalize timestamp
+        # Parse timestamp if possible
         timestamp = None
-        if timestamp_text:
+        if raw_ts:
             try:
-                timestamp = datetime.strptime(timestamp_text, "%B %d, %Y %I:%M %p")
+                timestamp = datetime.strptime(raw_ts, "%B %d, %Y %I:%M %p")
             except Exception:
-                timestamp = timestamp_text  # leave raw
+                timestamp = raw_ts  # fallback to raw
 
         return {
             "provider": "Venmo",
