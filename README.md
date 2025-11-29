@@ -5,7 +5,7 @@
 </p>
 
 
-# PostPay (4.1.0)
+# PostPay
 
 PostPay is an automated payment-notification ingestion engine that reads payment alerts from Gmail, parses structured payment data (Zelle, Venmo, Cash App, Apple Cash), logs each payment into SQLite for deduplication, and posts formatted notifications to Slack in real time.
 
