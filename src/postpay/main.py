@@ -5,10 +5,11 @@ import logging
 from postpay.config import load_config
 from postpay.db.connection import get_connection
 from postpay.db.migrate import initialize_schema
-from postpay.services.payment_importer import fetch_and_persist_new_payments
-from postpay.services.scheduler import maybe_sleep_until_window_ends
-from postpay.services.slack_client import SlackClient
 
+# Updated imports based on new folder layout
+from postpay.services.payments.importer import fetch_and_persist_new_payments
+from postpay.services.scheduling.scheduler import maybe_sleep_until_window_ends
+from postpay.services.notifications.slack import SlackClient
 
 logger = logging.getLogger("postpay")
 logging.basicConfig(
@@ -40,6 +41,7 @@ def main() -> None:
 
     while True:
         try:
+            # Sleep window enforcement (00:00–09:00)
             maybe_sleep_until_window_ends(config["ENABLE_SLEEP_MODE"])
 
             # Core workflow: fetch → parse → dedupe → persist
@@ -50,10 +52,12 @@ def main() -> None:
                 time.sleep(poll_interval)
                 continue
 
+            # Push each formatted message to Slack
             for payment in new_payments:
                 formatted = payment["formatted_message"]
                 slack.post_message(formatted)
-                logger.info("Posted new %s payment: %s", payment["provider"], formatted)
+                logger.info("Posted new %s payment: %s",
+                            payment["provider"], formatted)
 
         except Exception as exc:
             logger.exception("Unhandled exception in main loop: %s", exc)
