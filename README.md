@@ -1,15 +1,15 @@
-# PostPay (v4)
+# PostPay (4.1.0)
 Automated payment-notification ingestion and Slack alerting system.
 
 PostPay is a modular Python application that reads payment notification emails from Gmail, extracts structured payment data using provider-specific parsers, logs each payment to a SQLite database for deduplication, and posts formatted alerts to a Slack channel in real time.
 
-This repository contains a cleaned and fully modularized version of the original PostPay4.py script, organized using standard Python project practices for maintainability, testing, and portfolio presentation.
+This repository contains a cleaned and fully modularized version of the original PostPay4.py script, organized using standard Python project patterns for maintainability, testing, and portfolio presentation.
 
 ---
 
 ## Features
 
-PostPay replicates the exact functionality of the original script, including:
+PostPay implements the same functional logic as the original script, including:
 
 - Gmail API integration for reading recent payment-notification emails  
 - Parsing logic for:
@@ -17,16 +17,16 @@ PostPay replicates the exact functionality of the original script, including:
   - Venmo  
   - Cash App  
   - Apple Cash  
-  - Generic “Other” payments  
+  - Generic "Other" payments  
 - Regex-based extraction of amount, sender, and timestamp  
 - SQLite logging of posted payments to prevent duplicates  
-- Slack integration using `chat.postMessage`  
+- Slack integration using chat.postMessage  
 - Sleep mode between 00:00 and 09:00  
 - 30-second configurable polling interval  
-- Clean modular architecture  
-- Full unit test coverage for parsers, Slack client, and importer logic  
+- Modular, testable architecture  
+- Unit test coverage for parsers, Slack client, Gmail client, and importer logic  
 
-No behavior has been added or changed from the original PostPay4.py beyond structural organization.
+No business behavior was changed. Only the structure was modernized.
 
 ---
 
@@ -34,97 +34,87 @@ No behavior has been added or changed from the original PostPay4.py beyond struc
 
 Clone the repository:
 
-```
 git clone https://github.com/<your-username>/postpay.git
 cd postpay
-```
 
-Create a Python virtual environment:
+Create and activate a virtual environment:
 
-```
-python3 -m venv venv
+python3 -m venv venv 
 source venv/bin/activate
-```
 
 Install dependencies:
 
-```
 pip install -r requirements.txt
-```
 
 ---
 
 ## Configuration
 
-All configuration is injected via environment variables.  
+All configuration is loaded from environment variables.
 Create a `.env` file based on `.env.example`:
 
-```
 cp .env.example .env
-```
 
-Populate the following required values:
+Required values:
 
-- `SLACK_API_TOKEN`
-- `SLACK_CHANNEL_ID`
-- `GMAIL_API_TOKEN`
+- SLACK_API_TOKEN  
+- SLACK_CHANNEL_ID  
+- GMAIL_TOKEN_PATH  
+- GMAIL_CREDENTIALS_PATH  
+- GMAIL_SEARCH_QUERY  
 
 Optional settings:
 
-- `ENABLE_SLEEP_MODE`
-- `POLL_INTERVAL_SECONDS`
-- `GMAIL_SEARCH_QUERY`
-- `DB_PATH`
+- ENABLE_SLEEP_MODE  
+- POLL_INTERVAL_SECONDS  
+- DB_PATH  
 
-The database file is created automatically on first run.
+A SQLite database is created automatically on first run.
 
 ---
 
 ## Running PostPay
 
-From the project root:
+Run the application from the project root:
 
-```
-python src/main.py
-```
+python src/postpay/main.py
 
-The application will:
+The service will:
 
 1. Load configuration  
-2. Connect to SQLite  
-3. Ensure schema exists  
-4. Poll Gmail for recent messages  
-5. Parse Zelle, Venmo, CashApp, Apple, or Other payments  
-6. Deduplicate via database and runtime memory  
+2. Initialize the SQLite schema  
+3. Authenticate to the Gmail API  
+4. Fetch recent messages matching the search query  
+5. Parse Zelle, Venmo, Cash App, Apple Cash, or Other payments  
+6. Deduplicate using both the database and in-memory runtime cache  
 7. Post new payments to Slack  
-8. Sleep 30 seconds and repeat  
+8. Sleep for the configured interval and repeat  
 
 ---
 
 ## Testing
 
-To run the full test suite:
+Run the full test suite:
 
-```
-python -m unittest discover tests
-```
+python -m unittest discover src/postpay/tests
 
-Tests validate:
+The test suite validates:
 
-- Parser correctness  
-- Slack client request structure  
-- Importer end-to-end logic including duplicates and DB persistence  
+- All payment parsers  
+- Slack client request construction  
+- Gmail client message extraction  
+- Payment importer end-to-end logic including DB persistence and duplicate detection  
 
 ---
 
 ## Security Notes
 
-- Do not commit your `.env` file.  
-- OAuth tokens and Slack tokens must never be placed directly in source code.  
-- `.gitignore` is configured to prevent accidental leaks of credentials or databases.
+- Never commit `.env` files or any API tokens  
+- OAuth tokens and Slack tokens must remain outside source control  
+- `.gitignore` is configured to prevent accidental leaks of credentials or local SQLite databases  
 
 ---
 
 ## License
 
-PostPay is released under the MIT License.
+Released under the MIT License.
