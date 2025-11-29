@@ -1,12 +1,15 @@
 [project]
 name = "postpay"
 version = "4.1.0"
-description = "Automated payment-notification ingestion and Slack alerting system."
+description = "Automated payment ingestion, parsing, and Slack alerting system."
 readme = "README.md"
+requires-python = ">=3.10"
+
 authors = [
     { name = "Jason Burleigh", email = "jburleigh1992@gmail.com" }
 ]
-requires-python = ">=3.10"
+
+license = { text = "MIT" }
 
 dependencies = [
     "requests>=2.28",
@@ -16,9 +19,6 @@ dependencies = [
     "google-api-python-client>=2.100",
 ]
 
-license = { text = "MIT" }
-
-# Standardized PyPI classifiers
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
@@ -26,15 +26,14 @@ classifiers = [
     "Operating System :: OS Independent",
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Software Development :: Libraries",
     "Topic :: Office/Business :: Financial :: Accounting",
 ]
 
-# Installable script
+# CLI entry point: 'postpay' -> postpay.main:main
 [project.scripts]
 postpay = "postpay.main:main"
 
-# Optional groups
 [project.optional-dependencies]
 dev = [
     "pytest>=7",
@@ -42,18 +41,18 @@ dev = [
     "flake8>=6",
 ]
 
-# URLs that show on PyPI or GitHub metadata
 [project.urls]
 homepage = "https://github.com/jburleigh92/PostPay"
 repository = "https://github.com/jburleigh92/PostPay"
 issues = "https://github.com/jburleigh92/PostPay/issues"
 
-# Build system
+# --------------------------
+# BUILD SYSTEM (HATCHLING)
+# --------------------------
 [build-system]
-requires = ["setuptools>=67", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling>=1.18"]
+build-backend = "hatchling.build"
 
-# Tell setuptools how to find the package
-[tool.setuptools.packages.find]
-where = ["src"]
-include = ["postpay*"]
+# Package discovery: look inside /src
+[tool.hatch.build.targets.wheel]
+packages = ["src/postpay"]
