@@ -10,11 +10,13 @@ from postpay.parsers.cashapp_parser import CashAppParser
 from postpay.parsers.zelle_parser import ZelleParser
 from postpay.parsers.venmo_parser import VenmoParser
 from postpay.parsers.other_parsers import OtherPaymentParser
+
 from postpay.db.connection import get_cursor
 from postpay.utils.logging_utils import setup_logger
 
 logger = setup_logger(__name__)
 
+# All parsers are instantiated here — single point of orchestration
 PARSERS = [
     ApplePayParser(),
     CashAppParser(),
@@ -25,20 +27,26 @@ PARSERS = [
 
 
 def fetch_and_persist_new_payments(conn):
+    """
+    Gets new payments from all providers, deduplicates them,
+    persists new entries to the database, and returns a list
+    of newly saved payment records.
+    """
     cursor = get_cursor(conn)
-
     new_payments = []
 
     for parser in PARSERS:
         results = parser.fetch()
 
         for payment in results:
+            # Deduping logic
             cursor.execute(
                 "SELECT COUNT(*) FROM payments WHERE transaction_id = ?",
                 (payment["transaction_id"],),
             )
+
             if cursor.fetchone()[0] > 0:
-                continue
+                continue  # payment already exists
 
             cursor.execute(
                 """
