@@ -7,7 +7,6 @@ cleanly for the new modular architecture.
 """
 
 import base64
-import logging
 from typing import List, Dict, Optional
 
 from google.oauth2.credentials import Credentials
@@ -35,7 +34,7 @@ class GmailClient:
     def _authenticate(self):
         """
         Loads saved OAuth credentials and constructs the Gmail API client.
-        Assumes the token.json already exists (same as original script).
+        Assumes token.json already exists (same as original script).
         """
         try:
             creds = Credentials.from_authorized_user_file(self.token_path)
@@ -43,7 +42,7 @@ class GmailClient:
             logger.info("Gmail authentication successful.")
             return service
         except Exception as exc:
-            logger.error("Failed to authenticate Gmail client.", exc)
+            logger.error("Failed to authenticate Gmail client: %s", exc)
             raise
 
     def list_messages(self) -> List[Dict]:
@@ -100,5 +99,5 @@ class GmailClient:
             return decoded_bytes.decode("utf-8", errors="ignore")
 
         except Exception as exc:
-            logger.error("Failed to decode Gmail message body.", exc)
+            logger.error("Failed to decode Gmail message body: %s", exc)
             return None
