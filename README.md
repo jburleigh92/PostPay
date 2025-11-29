@@ -1,8 +1,7 @@
-<p align="left">
-  <img src="https://img.shields.io/github/v/tag/jburleigh92/PostPay?label=version&color=blue" />
-  <img src="https://img.shields.io/github/actions/workflow/status/jburleigh92/PostPay/tests.yml?label=tests" />
-  <img src="https://img.shields.io/github/license/jburleigh92/PostPay" />
-</p>
+![version](https://img.shields.io/badge/version-v4.1.0-blue)
+![tests](https://github.com/jburleigh92/PostPay/actions/workflows/tests.yml/badge.svg)
+![license](https://img.shields.io/badge/license-MIT-brightgreen)
+
 
 
 # PostPay
