@@ -1,7 +1,7 @@
 [project]
 name = "postpay"
 version = "4.1.0"
-description = "Automated payment-notification ingestion and Slack alerting system."
+description = "Automated payment-verification ingestion and Slack alerting system."
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [
@@ -19,9 +19,46 @@ dependencies = [
 [project.urls]
 Repository = "https://github.com/jburleigh92/PostPay"
 Issues = "https://github.com/jburleigh92/PostPay/issues"
+Documentation = "https://github.com/jburleigh92/PostPay#readme"
+
+[project.scripts]
+# Allows running the app via CLI:  postpay
+postpay = "postpay.main:main"
 
 [tool.setuptools]
-package-dir = {"" = "src"}
+package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
+include = ["postpay*"]
+
+[tool.setuptools.dynamic]
+# Import version dynamically from source: postpay/version.py
+version = { attr = "postpay.version.__version__" }
+
+# Optional logging configuration namespace (for future expansion)
+[tool.postpay.logging]
+level = "INFO"
+format = "%(asctime)s [%(levelname)s] %(name)s — %(message)s"
+datefmt = "%Y-%m-%d %H:%M:%S"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "coverage>=7.0.0",
+    "ruff>=0.2.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+select = ["E", "F", "W"]
+exclude = ["versions"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
