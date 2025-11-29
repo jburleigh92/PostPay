@@ -36,6 +36,10 @@ This repository is an industry-standard, fully modularized version of the origin
 ```
 PostPay/
 │
+├── .github/
+│   └── workflows/
+│       └── tests.yml                   # GitHub Actions CI (parser tests only)
+│
 ├── data/
 │   └── sample_emails.json
 │
