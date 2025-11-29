@@ -2,19 +2,18 @@ import re
 from datetime import datetime
 
 
-class OtherParser:
+class OtherPaymentParser:
     """
-    Fallback parser for any payment-style email that does NOT match the
-    Zelle, Venmo, Cash App, or Apple parsers.
+    Fallback parser for any payment-style email that does NOT match
+    Zelle, Venmo, Cash App, or Apple Cash.
 
-    This logic reflects the catch-all parsing behavior in your original PostPay4.py:
-    - Detect financial/payout/payment keywords
-    - Extract dollar amounts
-    - Extract sender using flexible "from/sent you" patterns
-    - Attempt timestamp parsing
+    This mirrors your original PostPay4.py catch-all logic:
+    - Broad financial/payment keyword detection
+    - Regex-based amount extraction
+    - Generic sender extraction
+    - Optional timestamp parsing
     """
 
-    # Broad payment-related keywords for fallback classification
     KEYWORDS = [
         "payment",
         "paid you",
@@ -39,15 +38,14 @@ class OtherParser:
 
     def matches(self, email_body: str) -> bool:
         """
-        Determines if the email likely represents a payment, even if
-        the specific provider cannot be matched.
+        Determines if the message looks like a payment-style email.
         """
-        body = email_body.lower()
-        return any(k in body for k in self.KEYWORDS)
+        lower = email_body.lower()
+        return any(k in lower for k in self.KEYWORDS)
 
     def parse(self, email_body: str):
         """
-        Parse a generic / unknown payment email body.
+        Parse fallback payment fields.
 
         Returns:
             {
@@ -56,26 +54,25 @@ class OtherParser:
                 "sender": ...,
                 "timestamp": ...
             }
-        Or None if it does not appear to be a payment email.
+        Or None if not a match.
         """
         if not self.matches(email_body):
             return None
 
-        # Extract amount
+        # Amount
         amount_match = self.AMOUNT_REGEX.search(email_body)
         amount = f"${amount_match.group(1)}" if amount_match else None
 
-        # Extract sender (optional)
+        # Sender
         sender_match = self.SENDER_REGEX.search(email_body)
         sender = sender_match.group(1).strip() if sender_match else "Unknown Sender"
 
-        # Attempt timestamp
+        # Timestamp
         timestamp_text = None
         ts_match = self.DATE_REGEX.search(email_body)
         if ts_match:
             timestamp_text = ts_match.group(1)
 
-        # Normalize
         timestamp = None
         if timestamp_text:
             try:
