@@ -1,64 +1,59 @@
 [project]
 name = "postpay"
 version = "4.1.0"
-description = "Automated payment-verification ingestion and Slack alerting system."
+description = "Automated payment-notification ingestion and Slack alerting system."
 readme = "README.md"
-license = { file = "LICENSE" }
 authors = [
     { name = "Jason Burleigh", email = "jburleigh1992@gmail.com" }
 ]
 requires-python = ">=3.10"
 
 dependencies = [
-    "requests>=2.31.0",
-    "google-api-python-client>=2.102.0",
-    "google-auth-httplib2>=0.1.0",
-    "google-auth-oauthlib>=1.2.0",
+    "requests>=2.28",
+    "pandas>=1.5",
+    "google-auth>=2.23",
+    "google-auth-oauthlib>=1.0",
+    "google-api-python-client>=2.100",
 ]
 
-[project.urls]
-Repository = "https://github.com/jburleigh92/PostPay"
-Issues = "https://github.com/jburleigh92/PostPay/issues"
-Documentation = "https://github.com/jburleigh92/PostPay#readme"
+license = { text = "MIT" }
 
+# Standardized PyPI classifiers
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Office/Business :: Financial :: Accounting",
+]
+
+# Installable script
 [project.scripts]
-# Allows running the app via CLI:  postpay
 postpay = "postpay.main:main"
 
-[tool.setuptools]
-package-dir = { "" = "src" }
+# Optional groups
+[project.optional-dependencies]
+dev = [
+    "pytest>=7",
+    "black>=23",
+    "flake8>=6",
+]
 
+# URLs that show on PyPI or GitHub metadata
+[project.urls]
+homepage = "https://github.com/jburleigh92/PostPay"
+repository = "https://github.com/jburleigh92/PostPay"
+issues = "https://github.com/jburleigh92/PostPay/issues"
+
+# Build system
+[build-system]
+requires = ["setuptools>=67", "wheel"]
+build-backend = "setuptools.build_meta"
+
+# Tell setuptools how to find the package
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["postpay*"]
-
-[tool.setuptools.dynamic]
-# Import version dynamically from source: postpay/version.py
-version = { attr = "postpay.version.__version__" }
-
-# Optional logging configuration namespace (for future expansion)
-[tool.postpay.logging]
-level = "INFO"
-format = "%(asctime)s [%(levelname)s] %(name)s — %(message)s"
-datefmt = "%Y-%m-%d %H:%M:%S"
-
-[project.optional-dependencies]
-dev = [
-    "pytest>=7.0.0",
-    "coverage>=7.0.0",
-    "ruff>=0.2.0",
-]
-
-[tool.ruff]
-line-length = 100
-target-version = "py310"
-select = ["E", "F", "W"]
-exclude = ["versions"]
-
-[tool.pytest.ini_options]
-pythonpath = ["src"]
-testpaths = ["tests"]
-
-[build-system]
-requires = ["setuptools>=68.0"]
-build-backend = "setuptools.build_meta"
