@@ -1,32 +1,113 @@
 # PostPay (4.1.0)
-Automated payment-notification ingestion and Slack alerting system.
 
-PostPay is a modular Python application that reads payment notification emails from Gmail, extracts structured payment data using provider-specific parsers, logs each payment to a SQLite database for deduplication, and posts formatted alerts to a Slack channel in real time.
+PostPay is an automated payment-notification ingestion engine that reads payment alerts from Gmail, parses structured payment data (Zelle, Venmo, Cash App, Apple Cash), logs each payment into SQLite for deduplication, and posts formatted notifications to Slack in real time.
 
-This repository contains a cleaned and fully modularized version of the original PostPay4.py script, organized using standard Python project patterns for maintainability, testing, and portfolio presentation.
+This repository is an industry-standard, fully modularized version of the original single-file PostPay4.py script, rewritten for clarity, maintainability, testing, and portfolio demonstration.
 
 ---
 
 ## Features
 
-PostPay implements the same functional logic as the original script, including:
-
-- Gmail API integration for reading recent payment-notification emails  
-- Parsing logic for:
+- Gmail API polling for recent payment-notification emails  
+- Provider-specific parsers for:
   - Zelle  
   - Venmo  
   - Cash App  
   - Apple Cash  
-  - Generic "Other" payments  
-- Regex-based extraction of amount, sender, and timestamp  
-- SQLite logging of posted payments to prevent duplicates  
-- Slack integration using chat.postMessage  
-- Sleep mode between 00:00 and 09:00  
-- 30-second configurable polling interval  
-- Modular, testable architecture  
-- Unit test coverage for parsers, Slack client, Gmail client, and importer logic  
+  - Generic fallback (“Other”)  
+- Regex-based extraction of amount, sender, timestamps  
+- SQLite persistence + deduplication  
+- Slack notifications using `chat.postMessage`  
+- Optional sleep window (00:00–09:00)  
+- Configurable polling interval  
+- Clean domain-based architecture  
+- Full unit test suite (parsers, importer, Gmail client, Slack client)
 
-No business behavior was changed. Only the structure was modernized.
+---
+
+## Architecture Overview
+
+```
+PostPay/
+│
+├── data/
+│   └── sample_emails.json
+│
+├── src/
+│   └── postpay/
+│       ├── db/
+│       │   ├── connection.py            # SQLite connection helpers
+│       │   ├── migrate.py               # Creates/updates schema
+│       │   └── __init__.py
+│       │
+│       ├── parsers/                     # Provider-specific payment parsers
+│       │   ├── apple_parser.py
+│       │   ├── cashapp_parser.py
+│       │   ├── other_parsers.py
+│       │   ├── venmo_parser.py
+│       │   ├── zelle_parser.py
+│       │   └── __init__.py
+│       │
+│       ├── services/
+│       │   ├── email/
+│       │   │   └── gmail_client.py      # Gmail API wrapper
+│       │   │
+│       │   ├── notifications/
+│       │   │   ├── formatter.py         # Slack-friendly formatting
+│       │   │   └── slack.py             # Slack API posting
+│       │   │
+│       │   ├── payments/
+│       │   │   ├── importer.py          # Import + dedupe + persistence
+│       │   │   └── __init__.py
+│       │   │
+│       │   ├── scheduling/
+│       │   │   ├── scheduler.py         # Sleep window scheduling
+│       │   │   ├── sleep_window.py      # Window logic
+│       │   │   └── __init__.py
+│       │   │
+│       │   └── __init__.py
+│       │
+│       ├── utils/
+│       │   ├── logging_utils.py         # Lightweight logging helpers
+│       │   ├── cli.py                   # Optional CLI entry
+│       │   ├── config.py                # Environment/config loader
+│       │   ├── logging.conf             # Logging configuration
+│       │   ├── version.py               # Version constant
+│       │   └── __init__.py
+│       │
+│       ├── main.py                      # Runtime entrypoint
+│       └── __init__.py
+│
+├── tests/
+│   ├── test_gmail_client.py
+│   ├── test_importer.py
+│   ├── test_parsers.py
+│   ├── test_slack_client.py
+│   └── __init__.py
+│
+├── requirements.txt                     # Python dependencies
+├── pyproject.toml                       # Packaging + metadata
+├── Makefile                             # Convenience tasks
+├── README.md                            # Project documentation
+├── VERSION                              # Version number (4.1.0)
+└── LICENSE                              # MIT License
+```
+
+---
+
+## Workflow Overview
+
+1. GmailClient queries the Gmail API for recent messages matching the configured search query.  
+2. Raw email bodies are extracted and passed to each provider parser.  
+3. Parsers return structured objects containing:  
+   - provider  
+   - amount  
+   - sender  
+   - timestamp  
+4. The importer checks SQLite for duplicates and writes new payments to the database.  
+5. Each new payment is formatted and posted to Slack.  
+6. If sleep mode is active, processing pauses between 00:00–09:00.  
+7. The loop repeats on the configured interval.
 
 ---
 
@@ -34,87 +115,87 @@ No business behavior was changed. Only the structure was modernized.
 
 Clone the repository:
 
-git clone https://github.com/<your-username>/postpay.git
-cd postpay
+```bash
+git clone https://github.com/<your-username>/PostPay.git
+cd PostPay
+```
 
-Create and activate a virtual environment:
+Create a virtual environment:
 
-python3 -m venv venv 
+```bash
+python3 -m venv venv
 source venv/bin/activate
+```
 
 Install dependencies:
 
+```bash
 pip install -r requirements.txt
+```
 
 ---
 
 ## Configuration
 
-All configuration is loaded from environment variables.
-Create a `.env` file based on `.env.example`:
+Configuration is provided via environment variables.  
+Create a `.env` file based on the example:
 
+```bash
 cp .env.example .env
+```
 
-Required values:
+Update values such as:
 
-- SLACK_API_TOKEN  
-- SLACK_CHANNEL_ID  
-- GMAIL_TOKEN_PATH  
-- GMAIL_CREDENTIALS_PATH  
-- GMAIL_SEARCH_QUERY  
+- `SLACK_API_TOKEN`
+- `SLACK_CHANNEL_ID`
+- `GMAIL_TOKEN_PATH`
+- `GMAIL_CREDENTIALS_PATH`
+- `GMAIL_SEARCH_QUERY`
+- `DB_PATH`
+- `ENABLE_SLEEP_MODE`
+- `POLL_INTERVAL_SECONDS`
 
-Optional settings:
-
-- ENABLE_SLEEP_MODE  
-- POLL_INTERVAL_SECONDS  
-- DB_PATH  
-
-A SQLite database is created automatically on first run.
+The SQLite database is created automatically.
 
 ---
 
 ## Running PostPay
 
-Run the application from the project root:
+Run:
 
+```bash
 python src/postpay/main.py
+```
 
-The service will:
-
-1. Load configuration  
-2. Initialize the SQLite schema  
-3. Authenticate to the Gmail API  
-4. Fetch recent messages matching the search query  
-5. Parse Zelle, Venmo, Cash App, Apple Cash, or Other payments  
-6. Deduplicate using both the database and in-memory runtime cache  
-7. Post new payments to Slack  
-8. Sleep for the configured interval and repeat  
+This starts the continuous ingestion loop.
 
 ---
 
 ## Testing
 
-Run the full test suite:
+Run the complete test suite:
 
-python -m unittest discover src/postpay/tests
+```bash
+python -m unittest discover tests
+```
 
-The test suite validates:
+Tests include:
 
-- All payment parsers  
-- Slack client request construction  
-- Gmail client message extraction  
-- Payment importer end-to-end logic including DB persistence and duplicate detection  
+- Gmail client API behavior  
+- Payment parsers  
+- Importer logic (dedupe + DB)  
+- Slack client request handling  
 
 ---
 
 ## Security Notes
 
-- Never commit `.env` files or any API tokens  
-- OAuth tokens and Slack tokens must remain outside source control  
-- `.gitignore` is configured to prevent accidental leaks of credentials or local SQLite databases  
+- Do not commit `.env` or OAuth credentials.  
+- `.gitignore` prevents checking in credential files or database files.  
+- Tokens/keys must never be hard-coded.
 
 ---
 
 ## License
 
-Released under the MIT License.
+PostPay is released under the MIT License.
