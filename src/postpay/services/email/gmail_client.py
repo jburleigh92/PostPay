@@ -34,7 +34,6 @@ class GmailClient:
     def _authenticate(self):
         """
         Loads saved OAuth credentials and constructs the Gmail API client.
-        Assumes token.json already exists (same as original script).
         """
         try:
             creds = Credentials.from_authorized_user_file(self.token_path)
@@ -42,12 +41,12 @@ class GmailClient:
             logger.info("Gmail authentication successful.")
             return service
         except Exception as exc:
-            logger.error("Failed to authenticate Gmail client: %s", exc)
+            logger.error("Failed to authenticate Gmail client.", exc)
             raise
 
     def list_messages(self) -> List[Dict]:
         """
-        Returns a list of Gmail messages matching the query filter.
+        List Gmail messages matching the search query.
         """
         try:
             response = (
@@ -63,16 +62,15 @@ class GmailClient:
 
     def get_message(self, msg_id: str) -> Dict:
         """
-        Returns the full Gmail message object, including payload parts.
+        Return a full message payload.
         """
         try:
-            message = (
+            return (
                 self.service.users()
                 .messages()
                 .get(userId="me", id=msg_id, format="full")
                 .execute()
             )
-            return message
         except HttpError as err:
             logger.error("Gmail API get_message error: %s", err)
             return {}
@@ -80,24 +78,20 @@ class GmailClient:
     @staticmethod
     def extract_text(message: Dict) -> Optional[str]:
         """
-        Extracts the plain-text body from a Gmail message payload.
-
-        The original PostPay4 logic depended on:
-        - payload.parts[0].body.data
-        - Base64 URL-safe decoding
+        Extract base64-decoded plain text from Gmail message payload.
         """
         try:
             parts = message.get("payload", {}).get("parts", [])
             if not parts:
                 return None
 
-            data = parts[0]["body"].get("data")
-            if not data:
+            encoded = parts[0]["body"].get("data")
+            if not encoded:
                 return None
 
-            decoded_bytes = base64.urlsafe_b64decode(data)
+            decoded_bytes = base64.urlsafe_b64decode(encoded)
             return decoded_bytes.decode("utf-8", errors="ignore")
 
         except Exception as exc:
-            logger.error("Failed to decode Gmail message body: %s", exc)
+            logger.error("Failed to decode Gmail message body.", exc)
             return None
