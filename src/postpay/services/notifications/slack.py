@@ -11,12 +11,19 @@ logger = setup_logger(__name__)
 
 
 class SlackClient:
+    """
+    Sends formatted messages to Slack via the Web API.
+    """
+
     def __init__(self, webhook_url: str, api_token: str, channel_id: str):
         self.webhook_url = webhook_url
         self.api_token = api_token
         self.channel_id = channel_id
 
-    def post_message(self, text: str):
+    def post_message(self, text: str) -> None:
+        """
+        Sends a message to Slack using chat.postMessage.
+        """
         headers = {"Authorization": f"Bearer {self.api_token}"}
         payload = {"channel": self.channel_id, "text": text}
 
